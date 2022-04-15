@@ -21,74 +21,63 @@ class SQSAgency(Agency):
 
         self.map = setting.get("TXMAP", {})
 
-    def tx_transactions_src(self, **kwargs):
+    def tx_entities_src(self, **kwargs):
         try:
-            raw_transactions = kwargs.pop("messages")
-            transactions = list(
+            raw_entities = kwargs.pop("messages")
+            entities = list(
                 map(
-                    lambda raw_transaction: self.tx_transaction_src(
-                        raw_transaction, **kwargs
-                    ),
-                    raw_transactions,
+                    lambda raw_entity: self.tx_entity_src(raw_entity, **kwargs),
+                    raw_entities,
                 )
             )
 
-            return transactions
+            return entities
         except Exception:
             log = traceback.format_exc()
             self.logger.exception(log)
             raise
 
-    def tx_transaction_src(self, raw_transaction, **kwargs):
+    def tx_entity_src(self, raw_entity, **kwargs):
         tx_type = kwargs.get("tx_type")
-        transaction = {
-            "src_id": raw_transaction[self.setting["src_metadata"][tx_type]["src_id"]],
-            "created_at": datetime.strptime(
-                raw_transaction[self.setting["src_metadata"][tx_type]["created_at"]],
-                "%Y-%m-%d %H:%M:%S",
-            ),
-            "updated_at": datetime.strptime(
-                raw_transaction[self.setting["src_metadata"][tx_type]["updated_at"]],
-                "%Y-%m-%d %H:%M:%S",
-            ),
-        }
-        try:
-            transaction.update(
-                {"data": self.transform_data(raw_transaction, self.map.get(tx_type))}
-            )
-        except Exception:
-            log = traceback.format_exc()
-            transaction.update({"tx_status": "F", "tx_note": log})
-            self.logger.exception(log)
-
-        return transaction
-
-    def tx_assets_src(self, **kwargs):
-        raw_assets = kwargs.pop("messages")
-        assets = list(
-            map(lambda raw_asset: self.tx_asset_src(raw_asset, **kwargs), raw_assets)
-        )
-
-        return assets
-
-    def tx_asset_src(self, raw_asset, **kwargs):
-        tx_type = kwargs.get("tx_type")
-        asset = {
-            "src_id": raw_asset[self.setting["src_metadata"][tx_type]["src_id"]],
-            "created_at": raw_asset[
+        entity = {
+            "src_id": raw_entity[self.setting["src_metadata"][tx_type]["src_id"]],
+            "created_at": raw_entity[
                 self.setting["src_metadata"][tx_type]["created_at"]
             ],
-            "updated_at": raw_asset[
+            "updated_at": raw_entity[
                 self.setting["src_metadata"][tx_type]["updated_at"]
             ],
         }
+
+        if type(entity["created_at"]) == str:
+            entity["created_at"] = datetime.strptime(
+                entity["created_at"], "%Y-%m-%dT%H:%M:%S%z"
+            )
+        if type(entity["updated_at"]) == str:
+            entity["updated_at"] = datetime.strptime(
+                entity["updated_at"], "%Y-%m-%dT%H:%M:%S%z"
+            )
+
         try:
             if tx_type == "product":
                 metadatas = self.get_product_metadatas(**kwargs)
-                asset.update({"data": self.transform_data(raw_asset, metadatas)})
+                entity.update({"data": self.transform_data(raw_entity, metadatas)})
+            else:
+                entity.update(
+                    {"data": self.transform_data(raw_entity, self.map.get(tx_type))}
+                )
         except Exception:
             log = traceback.format_exc()
-            asset.update({"tx_status": "F", "tx_note": log})
+            entity.update({"tx_status": "F", "tx_note": log})
             self.logger.exception(log)
 
-        return asset
+        return entity
+
+    def tx_transactions_src(self, **kwargs):
+        return self.tx_entities_src(**kwargs)
+
+    def tx_persons_src(self, **kwargs):
+        return self.tx_entities_src(**kwargs)
+
+    def tx_assets_src(self, **kwargs):
+        return self.tx_entities_src(**kwargs)

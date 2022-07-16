@@ -39,13 +39,14 @@ class SQSAgency(Agency):
 
     def tx_entity_src(self, raw_entity, **kwargs):
         tx_type = kwargs.get("tx_type")
+        target = kwargs.get("target")
         entity = {
-            "src_id": raw_entity[self.setting["src_metadata"][tx_type]["src_id"]],
+            "src_id": raw_entity[self.setting["src_metadata"][target][tx_type]["src_id"]],
             "created_at": raw_entity[
-                self.setting["src_metadata"][tx_type]["created_at"]
+                self.setting["src_metadata"][target][tx_type]["created_at"]
             ],
             "updated_at": raw_entity[
-                self.setting["src_metadata"][tx_type]["updated_at"]
+                self.setting["src_metadata"][target][tx_type]["updated_at"]
             ],
         }
 
@@ -64,7 +65,7 @@ class SQSAgency(Agency):
                 entity.update({"data": self.transform_data(raw_entity, metadatas)})
             else:
                 entity.update(
-                    {"data": self.transform_data(raw_entity, self.map.get(tx_type))}
+                    {"data": self.transform_data(raw_entity, self.map[target].get(tx_type))}
                 )
         except Exception:
             log = traceback.format_exc()

@@ -6,4 +6,4 @@ __author__ = "bibow"
 
 __all__ = ["datawald_sqsagency"]
 from .sqsagency import SQSAgency
-from .sqsagent import SQSAgent
+from .sqsagent import SQSAgent, deploy

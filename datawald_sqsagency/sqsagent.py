@@ -13,7 +13,7 @@ def deploy() -> list:
             "service": "DataWald",
             "class": "SQSAgent",
             "functions": {
-                "stream_handle": {
+                "retrieve_entities_from_source": {
                     "is_static": False,
                     "label": "sqsagency",
                     "mutation": [],

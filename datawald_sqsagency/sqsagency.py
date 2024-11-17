@@ -43,9 +43,6 @@ class SQSAgency(Agency):
     def tx_entity_src(self, raw_entity, **kwargs):
         tx_type = kwargs.get("tx_type")
         target = kwargs.get("target")
-        self.logger.info(f"tx_type: {tx_type}, target: {target}")
-        self.logger.info(f"raw_entity: {raw_entity}")
-        self.logger.info(f"setting: {self.setting}")
         entity = {
             "src_id": raw_entity[
                 self.setting["src_metadata"][target][tx_type]["src_id"]

@@ -6,6 +6,7 @@ __author__ = "bibow"
 
 import traceback
 from datetime import datetime
+
 from datawald_agency import Agency
 from datawald_connector import DatawaldConnector
 from sqs_connector import SQSConnector
@@ -42,8 +43,13 @@ class SQSAgency(Agency):
     def tx_entity_src(self, raw_entity, **kwargs):
         tx_type = kwargs.get("tx_type")
         target = kwargs.get("target")
+        self.logger.info(f"tx_type: {tx_type}, target: {target}")
+        self.logger.info(f"raw_entity: {raw_entity}")
+        self.logger.info(f"setting: {self.setting}")
         entity = {
-            "src_id": raw_entity[self.setting["src_metadata"][target][tx_type]["src_id"]],
+            "src_id": raw_entity[
+                self.setting["src_metadata"][target][tx_type]["src_id"]
+            ],
             "created_at": raw_entity[
                 self.setting["src_metadata"][target][tx_type]["created_at"]
             ],
@@ -67,7 +73,11 @@ class SQSAgency(Agency):
                 entity.update({"data": self.transform_data(raw_entity, metadatas)})
             else:
                 entity.update(
-                    {"data": self.transform_data(raw_entity, self.map[target].get(tx_type))}
+                    {
+                        "data": self.transform_data(
+                            raw_entity, self.map[target].get(tx_type)
+                        )
+                    }
                 )
         except Exception:
             log = traceback.format_exc()

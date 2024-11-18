@@ -1,4 +1,4 @@
-# **datawald_sqsagency Module**
+# **Datawald Sqsagency**
 
 The `datawald_sqsagency` module serves as a critical element of the DataWald integration framework, designed to leverage AWS SQS for seamless triggering and efficient data operations. This module ensures reliable data transformation, retrieval, and insertion, enabling a smooth and integrated data flow within the AWS ecosystem.
 
